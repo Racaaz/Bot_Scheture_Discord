@@ -1,0 +1,58 @@
+import discord
+import os
+from dotenv import load_dotenv
+from discord.ext import commands, tasks
+from datetime import datetime
+import sqlite3
+
+conn = sqlite3.connect('jadwal.db')
+cursor = conn.cursor()
+cursor.execute('''CREATE TABLE IF NOT EXISTS kuliah
+               (hari TEXT, jam TEXT, mata_kuliah TEXT, channel_id INTEGER)''')
+conn.commit()
+
+bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
+
+@tasks.loop(seconds=60)
+async def cek_jadwal():
+    sekarang = datetime.now()
+    hari_ini = sekarang.strftime("%A")
+    jam_sekarang = sekarang.strftime("%H:%M")
+
+    cursor.execute("SELECT mata_kuliah, channel_id from kuliah WHERE hari=? AND jam=?", (hari_ini, jam_sekarang))
+    hasil = cursor.fetchall()
+
+    for row in hasil:
+        channel = bot.get_channel(row[1])
+        await channel.send(f' **PENGINGAT KULIAH** {row[0]} dimulai sekarang!')
+
+@bot.command()
+async def tambah_jadwal(ctx, hari, jam, *, matkul):
+    cursor.execute("INSERT INTO kuliah VALUES(?, ?, ?, ?)", (hari, jam, matkul, ctx.channel.id))
+    conn.commit()
+    await ctx.send(f"jadwal {matkul} hari {hari} jam {jam} berhasil disimpan!")
+
+@bot.command()
+async def list_jadwal(ctx):
+    cursor.execute("SELECT rowid, hari, jam, mata_kuliah FROM kuliah")
+    rows = cursor.fetchall()
+
+    if not rows:
+        await ctx.send("Belum ada jadwal yang tersimpan")
+        return
+    
+    pesan = "**Daftar Jadwal Kuliah:**\n"
+    for row in rows:
+        pesan += f"**ID: {row[0]}** | {row[1]} - {row[2]} : {row[3]}\n"
+
+    await ctx.send(pesan)
+
+@bot.event
+async def on_ready():
+    cek_jadwal.start()
+    print(f'Bot {bot.user} sudah online!')
+
+
+load_dotenv()
+TOKEN = os.getenv('DISCORD_TOKEN')
+bot.run(TOKEN)

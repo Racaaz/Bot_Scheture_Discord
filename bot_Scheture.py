@@ -28,9 +28,27 @@ async def cek_jadwal():
 
 @bot.command()
 async def tambah_jadwal(ctx, hari, jam, *, matkul):
+    daftar_hari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
+
+    if hari.capitalize() not in daftar_hari:
+        await ctx.send(f"**Hari tidak valid!** Kamu memasukkan '{hari}'.\nFormat: `!tambah_jadwal [Hari] [Jam] [Matkul]`")
+        return
+    
+    if ":" not in jam:
+        await ctx.send(f"❌ **Format Jam salah!** Kamu memasukkan '{jam}'. Gunakan format HH:MM (Contoh: 08:00)")
+        return
+    
     cursor.execute("INSERT INTO kuliah VALUES(?, ?, ?, ?)", (hari, jam, matkul, ctx.channel.id))
     conn.commit()
     await ctx.send(f"jadwal {matkul} hari {hari} jam {jam} berhasil disimpan!")
+
+@tambah_jadwal.error
+async def tambah_jadwal_error(ctx, error):
+    if isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send('**Format Salah!** Gunakan: `!tambah_jadwal [hari] [jam] [nama_matkul]`')
+    else:
+        await ctx.send(f'Terjadi Kesalahan {error}')
+
 
 @bot.command()
 async def list_jadwal(ctx):

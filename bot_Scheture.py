@@ -59,6 +59,27 @@ async def hapus_jadwal(ctx, id_jadwal: int):
     else:
         await ctx.send(f'Tidak ditemukan jadwal dengan ID: {id_jadwal}')
 
+@bot.command()
+async def ubah_jam(ctx, id_jadwal: int, jam_baru: str):
+    cursor.execute('SELECT mata_kuliah FROM kuliah WHERE rowid=?', (id_jadwal,))
+    data = cursor.fetchone()
+
+    if data:
+        cursor.execute("UPDATE kuliah SET jam=? WHERE rowid=?",(jam_baru, id_jadwal))
+        conn.commit()
+        await ctx.send(f'Jam kuliah **{data[0]}** berhasil diubah menjadi **{jam_baru}**')
+    else:
+        await ctx.send(f'Tidak ditemukan jadwal dengan ID: {id_jadwal}')
+
+@bot.command()
+async def phelp(ctx):
+    await ctx.send(f'''Command:
+                   !list_jadwal: Melihat jadwal
+                   !tambah_jadwal: Menambahkan jadwal [hari] [jam] [matkul]
+                   !hapus_jadwal: Menghapus jadwal [id_jadwal]
+                   !ubah_jam: Merubah atau Update jam jadwal [jam] [id_jadwal]''')
+
+
 @bot.event
 async def on_ready():
     cek_jadwal.start()

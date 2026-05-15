@@ -2,6 +2,7 @@ import discord
 import os
 from dotenv import load_dotenv
 from discord.ext import commands, tasks
+from tabulate import tabulate
 from datetime import datetime
 import sqlite3
 
@@ -59,11 +60,16 @@ async def list_jadwal(ctx):
         await ctx.send("Belum ada jadwal yang tersimpan")
         return
     
-    pesan = "**Daftar Jadwal Kuliah:**\n"
-    for row in rows:
-        pesan += f"**ID: {row[0]}** | {row[1]} - {row[2]} : {row[3]}\n"
+    headers = ["ID", "Hari", "Jam", "Mata Kuliah"]
 
-    await ctx.send(pesan)
+    tabel_output = tabulate(rows, headers=headers, tablefmt="grid")
+
+    await ctx.send(f"**Daftar Jadwal Kuliah:**\n```\n{tabel_output}\n```")
+    # pesan = "**Daftar Jadwal Kuliah:**\n"
+    # for row in rows:
+    #     pesan += f"**ID: {row[0]}** | {row[1]} - {row[2]} : {row[3]}\n"
+
+    # await ctx.send(pesan)
 
 @bot.command()
 async def hapus_jadwal(ctx, id_jadwal: int):

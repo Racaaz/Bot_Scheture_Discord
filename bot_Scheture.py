@@ -47,6 +47,18 @@ async def list_jadwal(ctx):
 
     await ctx.send(pesan)
 
+@bot.command()
+async def hapus_jadwal(ctx, id_jadwal: int):
+    cursor.execute("SELECT mata_kuliah FROM kuliah WHERE rowid=?", (id_jadwal,))
+    data = cursor.fetchone()
+
+    if data:
+        cursor.execute("DELETE FROM kuliah WHERE rowid=?", (id_jadwal,))
+        conn.commit()
+        await ctx.send(f'Jadwal **{data[0]}** (ID: {id_jadwal}) telah dihapus!')
+    else:
+        await ctx.send(f'Tidak ditemukan jadwal dengan ID: {id_jadwal}')
+
 @bot.event
 async def on_ready():
     cek_jadwal.start()

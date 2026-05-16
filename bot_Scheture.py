@@ -37,7 +37,7 @@ async def cek_jadwal():
 
     for row in hasil:
         channel = bot.get_channel(row[1])
-        await channel.send(f' **PENGINGAT KULIAH** {row[0]} dimulai sekarang!')
+        await channel.send(f' **PENGINGAT JADWAL** {row[0]} dimulai sekarang!')
 
 @bot.command()
 async def tambah_jadwal(ctx, hari, jam, *, matkul):
@@ -53,7 +53,20 @@ async def tambah_jadwal(ctx, hari, jam, *, matkul):
     
     cursor.execute("INSERT INTO kuliah VALUES(?, ?, ?, ?)", (hari, jam, matkul, ctx.channel.id))
     conn.commit()
-    await ctx.send(f"jadwal {matkul} hari {hari} jam {jam} berhasil disimpan!")
+    # await ctx.send(f"jadwal {matkul} hari {hari} jam {jam} berhasil disimpan!")
+
+    embed = discord.Embed(
+        title="Jadwal baru berhasil ditambahkan",
+        description='Jadwal kuliah telah sukses ditambahkan ke dalam database',
+        color=discord.Color.green()
+    )
+    embed.add_field(name="Mata Kuliah", value=matkul, inline=False)
+    embed.add_field(name="Hari", value=hari.capitalize(), inline=True)
+    embed.add_field(name="Jam", value=jam, inline=True)
+    embed.set_footer(text=f'Ditambahkan oleh {ctx.author.name}', icon_url=ctx.author.display_avatar.url)
+
+    await ctx.send(embed=embed)
+
 
 @tambah_jadwal.error
 async def tambah_jadwal_error(ctx, error):
@@ -76,7 +89,7 @@ async def list_jadwal(ctx):
 
     tabel_output = tabulate(rows, headers=headers, tablefmt="grid")
 
-    await ctx.send(f"**Daftar Jadwal Kuliah:**\n```\n{tabel_output}\n```")
+    await ctx.send(f"**Daftar Jadwal Kuliah:**\n```\n{tabel_output}\n```")  # Menampikan dalam bentuk tabel
     # pesan = "**Daftar Jadwal Kuliah:**\n"
     # for row in rows:
     #     pesan += f"**ID: {row[0]}** | {row[1]} - {row[2]} : {row[3]}\n"
@@ -105,17 +118,34 @@ async def hari_ini(ctx):
         await ctx.send(f"Hari ini hari {hari_indo}, tidak ada jadwal perkuliahan")
         return
     
-    pesan = f'**Jadwal Kuliah Hari Ini {hari_indo}**\n'
-    pesan += "```\n"
-    pesan += f"{'ID':<4} | {'JAM':<7} | {'MATA KULIAH'}\n"
-    pesan += "-" * 35 + '\n'
+    embed = discord.Embed(
+        title="Jadwal Kuliah Hari Ini",
+        color=discord.Color.brand_green()
+    )
 
     for row in rows:
-        pesan += f"{str(row[0]):<4} | {row[2]:<7} | {row[3]}\n"
+        jam = row[2]
+        mata_kuliah = row[3]
 
-    pesan += "```"
+    embed.set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url)
+    embed.add_field(name="Mata Kuliah", value=mata_kuliah, inline=True)
+    embed.add_field(name="Jam", value=jam, inline=True)
+    embed.set_footer(text="Scheture Bot v1.0", icon_url=bot.user.display_avatar.url)
 
-    await ctx.send(pesan)
+    await ctx.send(embed=embed)  # menampilkan pesan dengan embed
+
+    
+    # pesan = f'**Jadwal Kuliah Hari Ini {hari_indo}**\n'
+    # pesan += "```\n"
+    # pesan += f"{'ID':<4} | {'JAM':<7} | {'MATA KULIAH'}\n"
+    # pesan += "-" * 35 + '\n'
+
+    # for row in rows:
+    #     pesan += f"{str(row[0]):<4} | {row[2]:<7} | {row[3]}\n"
+
+    # pesan += "```"
+
+    # await ctx.send(pesan)
         
         # await ctx.send(f'**ID: {row[0]}** | {row[1]} - {row[2]} : {row[3]}')
     

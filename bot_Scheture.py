@@ -17,10 +17,22 @@ bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 @tasks.loop(seconds=60)
 async def cek_jadwal():
     sekarang = datetime.now()
-    hari_ini = sekarang.strftime("%A")
+    hari_inggris = sekarang.strftime("%A")
     jam_sekarang = sekarang.strftime("%H:%M")
 
-    cursor.execute("SELECT mata_kuliah, channel_id from kuliah WHERE hari=? AND jam=?", (hari_ini, jam_sekarang))
+    kamus_hari = {
+        "Monday": "Senin", 
+        "Tuesday": "Selasa", 
+        "Wednesday": "Rabu",
+        "Thursday": "Kamis",
+        "Friday": "Jumat", 
+        "Saturday": "Sabtu",
+        "Sunday": "Minggu"
+    }
+
+    hari_indo = kamus_hari.get(hari_inggris, hari_inggris)
+
+    cursor.execute("SELECT mata_kuliah, channel_id from kuliah WHERE hari=? AND jam=?", (hari_indo, jam_sekarang))
     hasil = cursor.fetchall()
 
     for row in hasil:
@@ -72,6 +84,43 @@ async def list_jadwal(ctx):
     # await ctx.send(pesan)
 
 @bot.command()
+async def hari_ini(ctx):
+    hari_inggris = datetime.now().strftime("%A")
+    kamus_hari = {
+        "Monday": "Senin",
+        "Tuesday": "Selasa",
+        "Wednesday": "Rabu",
+        "Thursday": "Kamis",
+        "Friday": "Jumat",
+        "Saturday": "Sabtu",
+        "Sunday": "Minggu"
+    }
+
+    hari_indo = kamus_hari.get(hari_inggris, hari_inggris)
+    cursor.execute('SELECT rowid, hari, jam, mata_kuliah FROM kuliah WHERE hari=? ORDER BY jam ASC', (hari_indo,))
+    rows = cursor.fetchall()
+
+
+    if not rows:
+        await ctx.send(f"Hari ini hari {hari_indo}, tidak ada jadwal perkuliahan")
+        return
+    
+    pesan = f'**Jadwal Kuliah Hari Ini {hari_indo}**\n'
+    pesan += "```\n"
+    pesan += f"{'ID':<4} | {'JAM':<7} | {'MATA KULIAH'}\n"
+    pesan += "-" * 35 + '\n'
+
+    for row in rows:
+        pesan += f"{str(row[0]):<4} | {row[2]:<7} | {row[3]}\n"
+
+    pesan += "```"
+
+    await ctx.send(pesan)
+        
+        # await ctx.send(f'**ID: {row[0]}** | {row[1]} - {row[2]} : {row[3]}')
+    
+
+@bot.command()
 async def hapus_jadwal(ctx, id_jadwal: int):
     cursor.execute("SELECT mata_kuliah FROM kuliah WHERE rowid=?", (id_jadwal,))
     data = cursor.fetchone()
@@ -111,9 +160,11 @@ async def ubah_matkul(ctx, id_jadwal: int, matkul_baru: str):
 async def phelp(ctx):
     await ctx.send(f'''Command:
                    !list_jadwal: Melihat jadwal
+                   !hari_ini: Melihat jadwal hari ini
                    !tambah_jadwal: Menambahkan jadwal [hari] [jam] [matkul]
                    !hapus_jadwal: Menghapus jadwal [id_jadwal]
-                   !ubah_jam: Merubah atau Update jam jadwal [jam] [id_jadwal]''')
+                   !ubah_jam: Merubah atau Update jam jadwal [jam] [id_jadwal]
+                   !ubah_matkul: Merubah atau Update Mata Kuliah [id_jadwal] [matkul]''')
 
 
 @bot.event

@@ -6,6 +6,16 @@ from tabulate import tabulate
 from datetime import datetime
 import sqlite3
 
+kamus_hari = {
+        "Monday": "Senin", 
+        "Tuesday": "Selasa", 
+        "Wednesday": "Rabu",
+        "Thursday": "Kamis",
+        "Friday": "Jumat", 
+        "Saturday": "Sabtu",
+        "Sunday": "Minggu"
+    }
+
 conn = sqlite3.connect('jadwal.db')
 cursor = conn.cursor()
 cursor.execute('''CREATE TABLE IF NOT EXISTS kuliah
@@ -19,16 +29,6 @@ async def cek_jadwal():
     sekarang = datetime.now()
     hari_inggris = sekarang.strftime("%A")
     jam_sekarang = sekarang.strftime("%H:%M")
-
-    kamus_hari = {
-        "Monday": "Senin", 
-        "Tuesday": "Selasa", 
-        "Wednesday": "Rabu",
-        "Thursday": "Kamis",
-        "Friday": "Jumat", 
-        "Saturday": "Sabtu",
-        "Sunday": "Minggu"
-    }
 
     hari_indo = kamus_hari.get(hari_inggris, hari_inggris)
 
@@ -99,20 +99,10 @@ async def list_jadwal(ctx):
 @bot.command()
 async def hari_ini(ctx):
     hari_inggris = datetime.now().strftime("%A")
-    kamus_hari = {
-        "Monday": "Senin",
-        "Tuesday": "Selasa",
-        "Wednesday": "Rabu",
-        "Thursday": "Kamis",
-        "Friday": "Jumat",
-        "Saturday": "Sabtu",
-        "Sunday": "Minggu"
-    }
-
     hari_indo = kamus_hari.get(hari_inggris, hari_inggris)
+
     cursor.execute('SELECT rowid, hari, jam, mata_kuliah FROM kuliah WHERE hari=? ORDER BY jam ASC', (hari_indo,))
     rows = cursor.fetchall()
-
 
     if not rows:
         await ctx.send(f"Hari ini hari {hari_indo}, tidak ada jadwal perkuliahan")

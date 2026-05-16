@@ -96,6 +96,18 @@ async def ubah_jam(ctx, id_jadwal: int, jam_baru: str):
         await ctx.send(f'Tidak ditemukan jadwal dengan ID: {id_jadwal}')
 
 @bot.command()
+async def ubah_matkul(ctx, id_jadwal: int, matkul_baru: str):
+    cursor.execute('SELECT mata_kuliah FROM kuliah WHERE rowid=?', (id_jadwal,))
+    data = cursor.fetchone()
+
+    if data:
+        cursor.execute('UPDATE kuliah SET mata_kuliah=? WHERE rowid=?', (matkul_baru, id_jadwal))
+        conn.commit()
+        await ctx.send(f'Mata kuliah **{data[0]}** berhasil diubah menjadi **{matkul_baru}**')
+    else:
+        await ctx.send(f'Tidak ditemukan matkul dengan ID: {id_jadwal}')
+
+@bot.command()
 async def phelp(ctx):
     await ctx.send(f'''Command:
                    !list_jadwal: Melihat jadwal

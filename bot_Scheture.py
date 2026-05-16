@@ -112,14 +112,20 @@ async def hari_ini(ctx):
         title="Jadwal Kuliah Hari Ini",
         color=discord.Color.brand_green()
     )
-
+    embed.set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url)
+    
     for row in rows:
+        id_jadwal = row[0]
         jam = row[2]
         mata_kuliah = row[3]
+        
+        embed.add_field(
+            name=f"📚 {mata_kuliah}", 
+            value=f"**ID:** {id_jadwal} | **Jam:** {jam}", 
+            inline=False
+        )
 
-    embed.set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url)
-    embed.add_field(name="Mata Kuliah", value=mata_kuliah, inline=True)
-    embed.add_field(name="Jam", value=jam, inline=True)
+ 
     embed.set_footer(text="Scheture Bot v1.0", icon_url=bot.user.display_avatar.url)
 
     await ctx.send(embed=embed)  # menampilkan pesan dengan embed

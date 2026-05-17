@@ -5,6 +5,7 @@ from discord.ext import commands, tasks
 from tabulate import tabulate
 from datetime import datetime
 import sqlite3
+from myserver import server_on
 
 kamus_hari = {
         "Monday": "Senin", 
@@ -201,4 +202,5 @@ async def on_ready():
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
+server_on()
 bot.run(TOKEN)
